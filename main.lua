@@ -8,7 +8,7 @@ local ep_addon = {
   name = "Raid Stats",
   author = "Delarme",
   desc = "Shows top raid stats",
-  version = "0.4.1"
+  version = "0.4.2"
 }
 
 
@@ -147,8 +147,6 @@ local function GetData(unit)
 		if buff.buff_id == 143 then
 			increaseallattacksstacks = buff.stack
 		end
-
-
 	end
 	
 	--get debuffs later
@@ -224,15 +222,22 @@ local function GetData(unit)
 		-- get belt and count zeal gems
 
 		-- IF HAS ZEAL PASSIVE
-		local item = api.Equipment:GetEquippedItemTooltipText(unit, 4)
-		-- some sort of bug introduced recently?
+		--local item = api.Equipment:GetEquippedItemTooltipText(unit, 4)
+
 		local zealgems = 0
-		--api.Log:Info(tostring(item.socketInfo))
-		if item ~= nil then
-			for i = 1, #(item.socketInfo.socketItem) do
-				if item.socketInfo.socketItem[i] == 38181 then
-					zealgems = zealgems + 1
-				end
+
+		--if item ~= nil then
+		--	for i = 1, #(item.socketInfo.socketItem) do
+		--		if item.socketInfo.socketItem[i] == 38181 then
+		--			zealgems = zealgems + 1
+		--		end
+		--	end
+		--end
+		--api.Equipment:GetEquippedSkillsetLunagems("target")
+		local gems = api.Equipment:GetEquippedSkillsetLunagems(unit)
+		for i = 1, #gems do
+			if gems[i] == 38181 then
+				zealgems = zealgems + 1
 			end
 		end
 		
