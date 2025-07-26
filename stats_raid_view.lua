@@ -144,58 +144,38 @@ refreshButton:AddAnchor("RIGHT", minimizeButton, "RIGHT", -50, 0)
 refreshButton:Show(true)
 api.Interface:ApplyButtonSkin(refreshButton, BUTTON_BASIC.RESET)
 
-
---- Minimized view & maximize button
-local minimizedWnd = api.Interface:CreateEmptyWindow("minimizedWnd", "UIParent")
-minimizedWnd:SetExtent(280, 40)
-minimizedWnd:AddAnchor("TOPRIGHT", raidStatsWnd, 0, 0)
-local minimizedLabel = minimizedWnd:CreateChildWidget("label", "minimizedLabel", 0, true)
-minimizedLabel:SetText("Raid Stats (Hidden)")
-minimizedLabel.style:SetFontSize(FONT_SIZE.XLARGE)
-minimizedLabel.style:SetAlign(ALIGN.RIGHT)
-minimizedLabel:AddAnchor("TOPRIGHT", minimizedWnd, -100, FONT_SIZE.XLARGE)
--- Dragable bar for minimized window too
-local minimizedMoveWnd = minimizedWnd:CreateChildWidget("label", "minimizedMoveWnd", 0, true)
-minimizedMoveWnd:AddAnchor("TOPLEFT", minimizedWnd, 12, 0)
-minimizedMoveWnd:AddAnchor("TOPRIGHT", minimizedWnd, 0, 0)
-minimizedMoveWnd:SetHeight(40)
--- Drag handlers for dragable bar
-function minimizedMoveWnd:OnDragStart(arg)
-	if arg == nil or (arg == "LeftButton" and api.Input:IsShiftKeyDown()) then
-		minimizedWnd:StartMoving()
-		api.Cursor:ClearCursor()
-		api.Cursor:SetCursorImage(CURSOR_PATH.MOVE, 0, 0)
-	end
-end
-minimizedMoveWnd:SetHandler("OnDragStart", minimizedMoveWnd.OnDragStart)
-function minimizedMoveWnd:OnDragStop()
-	minimizedWnd:StopMovingOrSizing()
-	api.Cursor:ClearCursor()
-end
-minimizedMoveWnd:SetHandler("OnDragStop", minimizedMoveWnd.OnDragStop)
-if minimizedMoveWnd.RegisterForDrag ~= nil then
-	minimizedMoveWnd:RegisterForDrag("LeftButton")
-end
-if minimizedMoveWnd.EnableDrag ~= nil then
-    minimizedMoveWnd:EnableDrag(true)
-end
--- Toggle back to maximized view with this button
-local maximizeButton = minimizedWnd:CreateChildWidget("button", "maximizeButton", 0, true)
+local maximizeButton = raidStatsWnd:CreateChildWidget("button", "maximizeButton", 0, true)
 maximizeButton:SetExtent(26, 28)
-maximizeButton:AddAnchor("TOPRIGHT", minimizedWnd, -12, 5)
+maximizeButton:AddAnchor("TOPRIGHT", raidStatsWnd, -12, 5)
 local maximizeButtonTexture = maximizeButton:CreateImageDrawable(TEXTURE_PATH.HUD, "background")
 maximizeButtonTexture:SetTexture(TEXTURE_PATH.HUD)
 maximizeButtonTexture:SetCoords(754, 94, 26, 28)
 maximizeButtonTexture:AddAnchor("TOPLEFT", maximizeButton, 0, 0)
 maximizeButtonTexture:SetExtent(26, 28)
 -- Minimized Window Background Styling
-minimizedWnd.bg = minimizedWnd:CreateNinePartDrawable(TEXTURE_PATH.HUD, "background")
-minimizedWnd.bg:SetTextureInfo("bg_quest")
-minimizedWnd.bg:SetColor(0, 0, 0, 0.5)
-minimizedWnd.bg:AddAnchor("TOPLEFT", minimizedWnd, 0, 0)
-minimizedWnd.bg:AddAnchor("BOTTOMRIGHT", minimizedWnd, 0, 0)
+maximizeButton.bg = raidStatsWnd:CreateNinePartDrawable(TEXTURE_PATH.HUD, "background")
+maximizeButton.bg:SetTextureInfo("bg_quest")
+maximizeButton.bg:SetColor(0, 0, 0, 0.5)
+maximizeButton.bg:AddAnchor("TOPLEFT", maximizeButton, 0, 0)
+maximizeButton.bg:AddAnchor("BOTTOMRIGHT", maximizeButton, 0, 0)
 
-minimizedWnd:Show(false) --> default to being hidden
+maximizeButton:Show(false) --> default to being hidden
+local tooltipcreated = false
+if(api._Library ~= nil) then
+	tooltipcreated = true
+	api._Library.UI.CreateTooltip("MaximizeTooltip", maximizeButton, "Raid Stats")
+	local function ShowTooltip()
+		maximizeButton.tooltip:Show(true)
+	end
+	local function HideTooltip()
+		maximizeButton.tooltip:Show(false)
+	end
+	maximizeButton:SetHandler("OnEnter", ShowTooltip)
+	maximizeButton:SetHandler("OnLeave", HideTooltip)
+	maximizeButton.tooltip:RemoveAllAnchors()
+	maximizeButton.tooltip:AddAnchor("BOTTOM", maximizeButton, "LEFT", -50, 25)
+
+end
 
 -- Main Window Background Styling
 raidStatsWnd.bg = raidStatsWnd:CreateNinePartDrawable(TEXTURE_PATH.HUD, "background")
@@ -257,19 +237,37 @@ local function Update()
 	end
 
 end
+
+local function SetVisible(visible)
+  moveWnd:Show(visible)
+  minimizeButton:Show(visible)
+  refreshButton:Show(visible)
+  filterButton:Show(visible)
+  typeButton:Show(visible)
+  raidStatsWnd.bg:Show(visible)
+  for k = 1, 10 do
+	raidStatsWnd.child[k]:Show(visible)
+  end
+
+  maximizeButton:Show(not visible)
+  maximizeButton.bg:Show(not visible)
+  if tooltipcreated then
+	maximizeButton.tooltip:Show(false)
+  end
+end
+
 raidStatsWnd.minimizeButton:SetHandler("OnClick", function()
-  local statsMeterX, statsMeterY = raidStatsWnd:GetOffset()
-  minimizedWnd:RemoveAllAnchors()
-  minimizedWnd:AddAnchor("TOPRIGHT", raidStatsWnd, 0, 0)
-  raidStatsWnd:Show(false)
-  minimizedWnd:Show(true)
+  --local statsMeterX, statsMeterY = raidStatsWnd:GetOffset()
+  --minimizedWnd:RemoveAllAnchors()
+  --minimizedWnd:AddAnchor("TOPRIGHT", raidStatsWnd, 0, 0)
+  SetVisible(false)
+  
 end)
 
-minimizedWnd.maximizeButton:SetHandler("OnClick", function()
-  raidStatsWnd:RemoveAllAnchors()
-  raidStatsWnd:AddAnchor("TOPLEFT", minimizedWnd, 0, 0)
-  minimizedWnd:Show(false)
-  raidStatsWnd:Show(true)
+maximizeButton:SetHandler("OnClick", function()
+  --raidStatsWnd:RemoveAllAnchors()
+  --raidStatsWnd:AddAnchor("TOPLEFT", minimizedWnd, 0, 0)
+  SetVisible(true)
   Update()
 end)
 
@@ -291,20 +289,15 @@ function raidStatsWnd.moveWnd.typeButton:SelectedProc()
   --api.Log:Info("selected new item")
   Update()
 end
-
--- Show the damn thing.
---raidStatsWnd:Show(true)
-
-  --local statsMeterX, statsMeterY = raidStatsWnd:GetOffset()
-  minimizedWnd:RemoveAllAnchors()
-  minimizedWnd:AddAnchor("TOPRIGHT", raidStatsWnd, 0, 0)
-  raidStatsWnd:Show(false)
-  minimizedWnd:Show(true)
-
+  raidStatsWnd:Show(true)
+  SetVisible(false)
 function raidStatsWnd:Close()
 
 	raidStatsWnd:Show(false)
-	minimizedWnd:Show(false)
+	if tooltipcreated then
+		maximizeButton.tooltip:Show(false)
+	end
+	--minimizedWnd:Show(false)
 end
 
 

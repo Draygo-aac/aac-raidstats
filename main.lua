@@ -8,7 +8,7 @@ local ep_addon = {
   name = "Raid Stats",
   author = "Delarme",
   desc = "Shows top raid stats",
-  version = "0.4.2"
+  version = "0.5"
 }
 
 
@@ -68,8 +68,6 @@ local function GetData(unit)
 	
 	
 	local charInfoStat = api.Unit:UnitInfo(unit)
-	--local charInfoModifierStat = api.Unit:UnitModifierInfo(unit)
-	--local charInfoNormalized = Sub(charInfoStat, charInfoModifierStat)
 
 	local unitid = api.Unit:GetUnitId(unit)
 	
@@ -106,6 +104,7 @@ local function GetData(unit)
 	local greyhonorpot = false
 	local pinkhonorpot = false
 	local hasseaknight = false
+	local grandperformance = false
 	local buffCount = api.Unit:UnitBuffCount(unit) or 0
 	
     for i = 1, buffCount  do
@@ -117,7 +116,7 @@ local function GetData(unit)
 			hasode = true
 		end
 		if buff.buff_id == 13783 then
-			hasode =true
+			hasode = true
 		end
 		if buff.buff_id == 15031 then
 			rhythmstacks = buff.stack
@@ -146,6 +145,9 @@ local function GetData(unit)
 		end
 		if buff.buff_id == 143 then
 			increaseallattacksstacks = buff.stack
+		end
+		if buff.buff_id == 21433 then
+			grandperformance = true
 		end
 	end
 	
@@ -222,18 +224,10 @@ local function GetData(unit)
 		-- get belt and count zeal gems
 
 		-- IF HAS ZEAL PASSIVE
-		--local item = api.Equipment:GetEquippedItemTooltipText(unit, 4)
 
 		local zealgems = 0
 
-		--if item ~= nil then
-		--	for i = 1, #(item.socketInfo.socketItem) do
-		--		if item.socketInfo.socketItem[i] == 38181 then
-		--			zealgems = zealgems + 1
-		--		end
-		--	end
-		--end
-		--api.Equipment:GetEquippedSkillsetLunagems("target")
+
 		local gems = api.Equipment:GetEquippedSkillsetLunagems(unit)
 		for i = 1, #gems do
 			if gems[i] == 38181 then
@@ -261,13 +255,22 @@ local function GetData(unit)
 		healdpsmod = healdpsmod + (7 * (15 - rhythmstacks))
 		spelldpsmod = spelldpsmod + (7 * (15 - rhythmstacks))
 	end
-	
 
 	if hasode == false then
 		if hasseaknight then
 			healdpsmod = healdpsmod + 105
 		else
 			healdpsmod = healdpsmod + 80
+		end
+	else
+		if grandperformance == true then
+			if hasseaknight then
+				healdpsmod = healdpsmod - 136.5
+				healdpsmod = healdpsmod + 105
+			else
+				healdpsmod = healdpsmod - 104
+				healdpsmod = healdpsmod + 80
+			end
 		end
 	end
 	
@@ -300,7 +303,13 @@ local function GetData(unit)
 	local magicmul = 100 / (100 + charInfoStat.incoming_spell_damage_mul) 
 	local meleemul = 100 / (100 + charInfoStat.incoming_melee_damage_mul ) 
 	local rangedmul = 100 / (100 + charInfoStat.incoming_ranged_damage_mul )
-
+	-- div 0 alert or worse ;3 Thanks Crawling!
+	if (charInfoStat.magic_resist_percentage > 99.95) then
+		charInfoStat.magic_resist_percentage = 99.95
+	end
+	if (charInfoStat.armor_percentage > 99.95) then
+		charInfoStat.armor_percentage = 99.95
+	end
 	local armorres = 100 / (100 - charInfoStat.armor_percentage)
 	local magicres = (100 / (100 - charInfoStat.magic_resist_percentage))
 	local toughreduc = charInfoStat.battle_resist / (8000 + charInfoStat.battle_resist)
@@ -459,6 +468,13 @@ local function Unload()
 		raidStatsWnd = nil
 	end
 end
+
+if api._Addons == nil then
+	api._Addons = {}
+end
+advstatsapi = {}
+advstatsapi.GetData = GetData
+api._Addons.AdvStats = advstatsapi
 
 -- Here we make sure to bind the functions we defined to our addon. This is how the game knows what function to use!
 ep_addon.OnLoad = Load
