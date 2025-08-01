@@ -52,7 +52,7 @@ end
 local moveWnd = raidStatsWnd:CreateChildWidget("label", "moveWnd", 0, true)
 moveWnd:AddAnchor("TOPLEFT", raidStatsWnd, 12, 0)
 moveWnd:AddAnchor("TOPRIGHT", raidStatsWnd, 0, 0)
-moveWnd:SetHeight(80)
+moveWnd:SetHeight(20)
 moveWnd.style:SetFontSize(FONT_SIZE.XLARGE)
 moveWnd.style:SetAlign(ALIGN.LEFT)
 moveWnd:SetText("")
@@ -146,7 +146,7 @@ api.Interface:ApplyButtonSkin(refreshButton, BUTTON_BASIC.RESET)
 
 local maximizeButton = raidStatsWnd:CreateChildWidget("button", "maximizeButton", 0, true)
 maximizeButton:SetExtent(26, 28)
-maximizeButton:AddAnchor("TOPRIGHT", raidStatsWnd, -12, 5)
+maximizeButton:AddAnchor("TOPRIGHT", raidStatsWnd, -12, 5 - 126)
 local maximizeButtonTexture = maximizeButton:CreateImageDrawable(TEXTURE_PATH.HUD, "background")
 maximizeButtonTexture:SetTexture(TEXTURE_PATH.HUD)
 maximizeButtonTexture:SetCoords(754, 94, 26, 28)
@@ -248,6 +248,15 @@ local function SetVisible(visible)
   for k = 1, 10 do
 	raidStatsWnd.child[k]:Show(visible)
   end
+  
+  if visible then
+	raidStatsWnd:SetExtent(280, 280)
+
+  else
+	raidStatsWnd:SetExtent(26, 28)
+  end
+
+
 
   maximizeButton:Show(not visible)
   maximizeButton.bg:Show(not visible)
@@ -260,6 +269,7 @@ raidStatsWnd.minimizeButton:SetHandler("OnClick", function()
   --local statsMeterX, statsMeterY = raidStatsWnd:GetOffset()
   --minimizedWnd:RemoveAllAnchors()
   --minimizedWnd:AddAnchor("TOPRIGHT", raidStatsWnd, 0, 0)
+  
   SetVisible(false)
   
 end)
