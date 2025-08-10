@@ -8,7 +8,7 @@ local ep_addon = {
   name = "Raid Stats",
   author = "Delarme",
   desc = "Shows top raid stats",
-  version = "0.5.1"
+  version = "0.5.1.1"
 }
 
 
@@ -56,7 +56,7 @@ local function GetBuffs(unit)
 
 end
 
-function ComputeEffectiveStat(dps, critrate, critbonus, statbonus, acc)
+local function ComputeEffectiveStat(dps, critrate, critbonus, statbonus, acc)
 	local critrateper = critrate / 100
 	local critbonusper = critbonus / 100
 	local statbonus = 1 + (statbonus / 100)
@@ -106,7 +106,8 @@ local function GetData(unit)
 	local hasseaknight = false
 	local grandperformance = false
 	local buffCount = api.Unit:UnitBuffCount(unit) or 0
-	
+	local skilldmgbuff = 0
+
     for i = 1, buffCount  do
 		local buff = api.Unit:UnitBuff(unit, i)
 		if buff.buff_id == 11467 then
@@ -148,6 +149,45 @@ local function GetData(unit)
 		end
 		if buff.buff_id == 21433 then
 			grandperformance = true
+		end
+		--if buff.buff_id == 18504 then
+		--	api.Log:Info("Bloody Chanty")
+			--18 to 26%
+		--end
+		if buff.buff_id == 7663 then
+
+			--api.Log:Info("Bloody Chanty1")
+			skilldmgbuff = skilldmgbuff + 18 + ((5 - math.ceil((buff.timeLeft + 200) / 1000)) * 2)
+			--api.Log:Info(buff.timeLeft)
+			--api.Log:Info(charInfoStat.melee_damage_mul - chantybuff)
+			--api.Log:Info(chantybuff)
+			
+			--18-26% bc
+		end
+		--if buff.buff_id == 7664 then
+		--api.Log:Info("Bloody Chanty2")
+			--18%-26% bc
+		--end
+		if buff.buff_id == 667 then
+			skilldmgbuff = skilldmgbuff + 16 + ((5 - math.ceil((buff.timeLeft + 200) / 1000)) * 2)
+			--16-24%
+			-- rank 1 bloody chanty
+		end
+		if buff.buff_id == 2196 then
+			skilldmgbuff = skilldmgbuff + 16 + ((5 - math.ceil((buff.timeLeft + 200) / 1000)) * 2)
+		--api.Log:Info("Bloody Chanty3")
+			--16-24%
+			-- rank 1 bloody chanty			
+		end
+		--if buff.buff_id == 2194 then
+			-- 9-14% (DO NOT USE)
+		--end
+		--if buff.buff_id == 2195 then
+			-- +12-19% (DO NOT USE)
+		--end
+		if buff.buff_id == 15103 then
+			chantybuff = skilldmgbuff + chantybuff + 2
+			--hero cape buff 2% skill damage
 		end
 	end
 	
@@ -193,6 +233,12 @@ local function GetData(unit)
 	local meleedpsmod = 0
 	local rangeddpsmod = 0
 	
+	if chantybuff > 0 then
+		melee_damage_mul = melee_damage_mul - chantybuff
+		ranged_damage_mul = ranged_damage_mul - chantybuff
+		spell_damage_mul = spell_damage_mul - chantybuff
+	end
+
 	if hasbattlerage then
 		if hasbattlefocus then
 			melee_critical_bonus = melee_critical_bonus - 20
@@ -341,18 +387,18 @@ local function GetData(unit)
 
 end
 
-function GetUnitId(unit)
+local function GetUnitId(unit)
 	return api.Unit:GetUnitId(unit)
 
 end
 
-function GetUnitNameById(unitid)
+local function GetUnitNameById(unitid)
 	return api.Unit:GetUnitNameById(unitid)
 end
 
 local myName = ""
 
-function Fetch(unit, type)
+local function Fetch(unit, type)
 	local gotunitid, unitid = pcall(GetUnitId, unit)
 	--api.Log:Info(unit)
 	--api.Log:Info(tostring(gotunitid))
@@ -387,7 +433,7 @@ end
 
 
 
-function GetRaidData(type)
+local function GetRaidData(type)
 
 	--api.Log:Info(type)
 
