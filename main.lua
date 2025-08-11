@@ -8,7 +8,7 @@ local ep_addon = {
   name = "Raid Stats",
   author = "Delarme",
   desc = "Shows top raid stats",
-  version = "0.5.1.1"
+  version = "0.5.1.2"
 }
 
 
@@ -186,7 +186,7 @@ local function GetData(unit)
 			-- +12-19% (DO NOT USE)
 		--end
 		if buff.buff_id == 15103 then
-			chantybuff = skilldmgbuff + chantybuff + 2
+			skilldmgbuff = skilldmgbuff + skilldmgbuff + 2
 			--hero cape buff 2% skill damage
 		end
 	end
@@ -233,10 +233,10 @@ local function GetData(unit)
 	local meleedpsmod = 0
 	local rangeddpsmod = 0
 	
-	if chantybuff > 0 then
-		melee_damage_mul = melee_damage_mul - chantybuff
-		ranged_damage_mul = ranged_damage_mul - chantybuff
-		spell_damage_mul = spell_damage_mul - chantybuff
+	if skilldmgbuff > 0 then
+		melee_damage_mul = melee_damage_mul - skilldmgbuff
+		ranged_damage_mul = ranged_damage_mul - skilldmgbuff
+		spell_damage_mul = spell_damage_mul - skilldmgbuff
 	end
 
 	if hasbattlerage then
