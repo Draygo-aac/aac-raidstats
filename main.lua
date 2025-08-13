@@ -8,7 +8,7 @@ local ep_addon = {
   name = "Raid Stats",
   author = "Delarme",
   desc = "Shows top raid stats",
-  version = "0.5.2"
+  version = "0.5.3"
 }
 local debug = false
 
@@ -42,131 +42,8 @@ local labels = {
 
 local advStatsWndo
 
-local function ReduceAgility(stat, amount)
-	stat.ranged_critical_rate = stat.ranged_critical_rate - (0.11 * (amount / 8) )
-	stat.melee_critical_rate = stat.melee_critical_rate - (0.11 * (amount / 4) )
-	stat.rangeddpsmod = stat.rangeddpsmod - (0.2 * amount)
-end
-
-
-local BuffModificationFunctions = {}
-
-BuffModificationFunctions[11468] = function (stat, buff)
-	stat.hasseaknight = true
-end
-BuffModificationFunctions[835] = function (stat, buff)
-	stat.hasode = true
-end
-BuffModificationFunctions[13783] = function (stat, buff)
-	stat.hasode = true
-end
-BuffModificationFunctions[15031] = function (stat, buff)
-	stat.rhythmstacks = buff.stack
-end
-BuffModificationFunctions[495] = function (stat, buff)
-		--zeal buff
-		stat.heal_critical_rate = stat.heal_critical_rate - 5
-		stat.heal_critical_bonus = stat.heal_critical_bonus - 75
-
-		stat.melee_critical_rate = stat.melee_critical_rate - 5
-		stat.melee_critical_bonus = stat.melee_critical_bonus - 75
-
-		stat.ranged_critical_rate = stat.ranged_critical_rate - 5
-		stat.ranged_critical_bonus = stat.ranged_critical_bonus - 75
-
-		stat.spell_critical_rate = stat.spell_critical_rate - 5
-		stat.spell_critical_bonus = stat.spell_critical_bonus - 75
-end
-BuffModificationFunctions[7689] = function (stat, buff)
-	stat.greyhonorpot = true
-end
-BuffModificationFunctions[9000056] = function (stat, buff)
-	stat.greyhonorpot = true
-end
-BuffModificationFunctions[900061] = function (stat, buff)
-	stat.greyhonorpot = true
-end
-BuffModificationFunctions[7688] = function (stat, buff)
-	stat.pinkhonorpot = true
-end
-BuffModificationFunctions[9000055] = function (stat, buff)
-	stat.pinkhonorpot = true
-end
-BuffModificationFunctions[900060] = function (stat, buff)
-	stat.pinkhonorpot = true
-end
-BuffModificationFunctions[11344] = function (stat, buff)
-	stat.deliriumstacks = buff.stack
-end
-BuffModificationFunctions[7651] = function (stat, buff)
-	--battle focus
-	stat.melee_critical_bonus = stat.melee_critical_bonus - 20
-end
-BuffModificationFunctions[182] = function (stat, buff)
-	stat.hasfrenzy = true
-end
-BuffModificationFunctions[143] = function (stat, buff)
-	stat.meleedpsmod = stat.meleedpsmod + (-30 * buff.stack)
-	stat.spelldpsmod = stat.spelldpsmod + (-30 * buff.stack)
-end
-BuffModificationFunctions[21433] = function (stat, buff)
-	stat.grandperformance = true
-end
-BuffModificationFunctions[7663] = function (stat, buff)
-	stat.skilldmgbuff = stat.skilldmgbuff + 18 + ((5 - math.ceil((buff.timeLeft + 200) / 1000)) * 2)
-end
-BuffModificationFunctions[667] = function (stat, buff)
-	stat.skilldmgbuff = stat.skilldmgbuff + 16 + ((5 - math.ceil((buff.timeLeft + 200) / 1000)) * 2)
-end
-BuffModificationFunctions[2196] = function (stat, buff)
-	stat.skilldmgbuff = stat.skilldmgbuff + 16 + ((5 - math.ceil((buff.timeLeft + 200) / 1000)) * 2)
-end
-BuffModificationFunctions[15103] = function (stat, buff)
-	stat.skilldmgbuff = stat.skilldmgbuff + 2
-end
-BuffModificationFunctions[8226] = function (stat, buff)
-	--name = "Equip Shield",
-	--        description = "Increases Physical Defense and Magic Defense |nc;+200|r.\Increases max Health and Mana |nc;+350|r.",
-
-end
-BuffModificationFunctions[6423] = function (stat, buff)
-	-- name = "Epic Cloth Armor",
-end
-BuffModificationFunctions[714] = function (stat, buff)
-	-- name = "Complete Cloth Set",
-end
-BuffModificationFunctions[9000001] = function (stat, buff)
-	-- name = "Daru Blessing",
-end
-BuffModificationFunctions[6605] = function (stat, buff)
-	-- name = "General",
-end
-BuffModificationFunctions[15784] = function (stat, buff)
-	-- name = "Eanna's Energy",
-end
-BuffModificationFunctions[16547] = function (stat, buff)
-	-- name = "Amarendra IV's Blessing",
-end
-BuffModificationFunctions[13779] = function (stat, buff)
-	-- name = "Freerunner r2", --agi 180
-	ReduceAgility(stat, 180)
-end
-BuffModificationFunctions[13780] = function (stat, buff)
-	-- name = "Freerunner r3", --agi 200
-	ReduceAgility(stat, 200)
-end
-BuffModificationFunctions[15223] = function (stat, buff)
-	-- name = "Freerunner rX", --agi 220
-	ReduceAgility(stat, 220)
-end
-BuffModificationFunctions[13781] = function (stat, buff)
-	-- name = "Freerunner r4", --agi 220
-	ReduceAgility(stat, 220)
-end
-BuffModificationFunctions[340] = function (stat, buff)
-	-- name = "Freerunner r1", --agi 160
-	ReduceAgility(stat, 160)
-end
+local BuffModificationFunctions = require("raidstats/buffs")
+local DebuffModificationFunctions = require("raidstats/debuffs")
 
 local function Sub(tablea, tableb)
 	local outtable = {}
@@ -235,7 +112,7 @@ local function GetData(unit)
 	--api.File:Write("charinfomod.txt", charInfoStat)
 
 	local buffCount = api.Unit:UnitBuffCount(unit) or 0
-
+	local debuffCount = api.Unit:UnitDeBuffCount(unit) or 0
 	
 	--get debuffs later
 	--DecreasesDefense 4679 10 stack max -10% each stack
@@ -244,6 +121,7 @@ local function GetData(unit)
 	-- 24.4 -> 29.4 melee crit rate different scaling?
 	-- 180/3650
 	local stat = {}
+	stat.maxhp = maxhp
 	stat.haszeal = false
 	stat.hasode = false
 	stat.rhythmstacks = 0
@@ -264,6 +142,8 @@ local function GetData(unit)
 	stat.meleedpsmod = 0
 	stat.rangeddpsmod = 0
 	stat.skilldmgbuff = 0
+	stat.magicdefensemod = 0
+	stat.physdefensemod = 0
 
 	stat.heal_dps				= charInfoStat.heal_dps
 	stat.heal_critical_rate		= charInfoStat.heal_critical_rate
@@ -288,6 +168,14 @@ local function GetData(unit)
 	stat.spell_damage_mul		= charInfoStat.spell_damage_mul
 	stat.spell_success_rate		= charInfoStat.spell_success_rate
 
+	stat.incoming_spell_damage_mul = charInfoStat.incoming_spell_damage_mul
+	stat.incoming_melee_damage_mul =  charInfoStat.incoming_melee_damage_mul 
+	stat.incoming_ranged_damage_mul =  charInfoStat.incoming_ranged_damage_mul 
+	stat.magic_resist_percentage = charInfoStat.magic_resist_percentage
+	stat.armor_percentage = charInfoStat.armor_percentage
+	stat.battle_resist = charInfoStat.battle_resist
+
+
 	local effectiveHealingPower = ComputeEffectiveStat(stat.heal_dps, stat.heal_critical_rate, stat.heal_critical_bonus, stat.heal_mul, 100)
 
 	local effectivemeleeattack = ComputeEffectiveStat(stat.melee_dps, stat.melee_critical_rate, stat.melee_critical_bonus, stat.melee_damage_mul, stat.melee_success_rate)
@@ -295,7 +183,44 @@ local function GetData(unit)
 	local effectiverangedattack = ComputeEffectiveStat(stat.ranged_dps, stat.ranged_critical_rate, stat.ranged_critical_bonus, stat.ranged_damage_mul, stat.ranged_success_rate)
 
 	local effectivemagicattack = ComputeEffectiveStat(stat.spell_dps, stat.spell_critical_rate, stat.spell_critical_bonus, stat.spell_damage_mul, stat.spell_success_rate)
+	local mmul = stat.incoming_spell_damage_mul
+	if mmul > 99.95 then
+		mmul = -99.95
+	end
+	local magicmul = 100 / (100 + mmul) 
+
+	local pmul = stat.incoming_melee_damage_mul
+	if pmul > 99.95 then
+		pmul = -99.95
+	end
+
+	local meleemul = 100 / (100 + pmul ) 
+	local rmul = stat.incoming_ranged_damage_mul
+	if rmul > 99.95 then
+		rmul = -99.95
+	end
+	local rangedmul = 100 / (100 + rmul )
+
+	-- div 0 alert or worse ;3 Thanks Crawling!
+	local mres = stat.magic_resist_percentage
+	if (mres > 99.95) then
+		mres = 99.95
+	end
+	local ares = stat.armor_percentage
+	if (ares > 99.95) then
+		ares = 99.95
+	end
+	local armorres = 100 / (100 - ares)
+	local magicres = (100 / (100 - mres))
+	local toughreduc = stat.battle_resist / (8000 + stat.battle_resist)
+	local toughmul = (1 / (1 - toughreduc))
 	
+
+	local cmeleehp = stat.maxhp * armorres * toughmul * meleemul
+	local crangedhp = stat.maxhp * armorres * toughmul * rangedmul
+	local cmagichp = stat.maxhp * magicmul * magicres * toughmul 
+
+
 
 
     for i = 1, buffCount  do
@@ -306,9 +231,24 @@ local function GetData(unit)
 			if debug then
 				api.Log:Info(buff)
 			end
+			--for ii = 0, 100 do
+			--	api.Log:Info(tostring(ii) .. tostring(buff.buff_id == 8000500 + ii))
+			--end
 		end
 	end
 
+
+    for i = 1, debuffCount do
+        local buff = api.Unit:UnitDeBuff(unit, i)
+		if (DebuffModificationFunctions[buff.buff_id] ~= nil) then
+			DebuffModificationFunctions[buff.buff_id](stat, buff)
+		else
+			if debug then
+				api.Log:Info(buff)
+			end
+
+		end
+	end
 
 	--if stat.skilldmgbuff > 0 then
 	stat.melee_damage_mul = stat.melee_damage_mul - stat.skilldmgbuff
@@ -402,34 +342,50 @@ local function GetData(unit)
 
 	local normalizedmagicattack = ComputeEffectiveStat(stat.spell_dps, stat.spell_critical_rate, stat.spell_critical_bonus, stat.spell_damage_mul, stat.spell_success_rate)
 
-	local magicmul = 100 / (100 + charInfoStat.incoming_spell_damage_mul) 
-	local meleemul = 100 / (100 + charInfoStat.incoming_melee_damage_mul ) 
-	local rangedmul = 100 / (100 + charInfoStat.incoming_ranged_damage_mul )
+	mmul = stat.incoming_spell_damage_mul
+	if mmul > 99.95 then
+		mmul = -99.95
+	end
+	magicmul = 100 / (100 + mmul) 
+
+	pmul = stat.incoming_melee_damage_mul
+	if pmul > 99.95 then
+		pmul = -99.95
+	end
+
+	meleemul = 100 / (100 + pmul ) 
+	rmul = stat.incoming_ranged_damage_mul
+	if rmul > 99.95 then
+		rmul = -99.95
+	end
+	rangedmul = 100 / (100 + rmul )
+
+
 	-- div 0 alert or worse ;3 Thanks Crawling!
-	if (charInfoStat.magic_resist_percentage > 99.95) then
-		charInfoStat.magic_resist_percentage = 99.95
+	if (stat.magic_resist_percentage > 99.95) then
+		stat.magic_resist_percentage = 99.95
 	end
-	if (charInfoStat.armor_percentage > 99.95) then
-		charInfoStat.armor_percentage = 99.95
+	if (stat.armor_percentage > 99.95) then
+		stat.armor_percentage = 99.95
 	end
-	local armorres = 100 / (100 - charInfoStat.armor_percentage)
-	local magicres = (100 / (100 - charInfoStat.magic_resist_percentage))
-	local toughreduc = charInfoStat.battle_resist / (8000 + charInfoStat.battle_resist)
-	local toughmul = (1 / (1 - toughreduc))
+	armorres = 100 / (100 - stat.armor_percentage)
+	magicres = (100 / (100 - stat.magic_resist_percentage))
+	toughreduc = stat.battle_resist / (8000 + stat.battle_resist)
+	toughmul = (1 / (1 - toughreduc))
 	
 
-	local meleehp = maxhp * armorres * toughmul * meleemul
-	local rangedhp = maxhp * armorres * toughmul * rangedmul
-	local magichp = maxhp * magicmul * magicres * toughmul 
+	local meleehp = stat.maxhp * armorres * toughmul * meleemul
+	local rangedhp = stat.maxhp * armorres * toughmul * rangedmul
+	local magichp = stat.maxhp * magicmul * magicres * toughmul 
 
 	local data = {}
 	data[1] = effectivemeleeattack
 	data[2] = effectiverangedattack
 	data[3] = effectivemagicattack
 	data[4] = effectiveHealingPower
-	data[5] = meleehp
-	data[6] = rangedhp
-	data[7] = magichp
+	data[5] = cmeleehp
+	data[6] = crangedhp
+	data[7] = cmagichp
 
 	data[8] = normalizedmeleeattack
 	data[9] = normalizedrangedattack
