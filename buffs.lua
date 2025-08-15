@@ -89,7 +89,7 @@ BuffModificationFunctions[11344] = function (stat, buff)
 	stat.deliriumstacks = buff.stack
 end
 BuffModificationFunctions[7651] = function (stat, buff)
-	--battle focus
+	--battle focus rank 2
 	stat.melee_critical_bonus = stat.melee_critical_bonus - 20
 end
 BuffModificationFunctions[182] = function (stat, buff)
@@ -227,17 +227,54 @@ BuffModificationFunctions[7570 ] = function (stat, buff)
 	stat.incoming_ranged_damage_mul = stat.incoming_ranged_damage_mul + 30
 end
 BuffModificationFunctions[512 ] = function (stat, buff)
-	-- name = "Magic Defense Boost +1600mdef" 
+	-- name = "shadowplay buff" 
 	stat.ranged_critical_rate = stat.ranged_critical_rate - 10
 	stat.melee_critical_rate = stat.melee_critical_rate - 10
 end
 BuffModificationFunctions[2596 ] = function (stat, buff)
-	-- name = "Magic Defense Boost +1600mdef" 
+	-- name = "serp shield" 
 	AdjustDamageReduction(stat, 30)
 end
 BuffModificationFunctions[552 ] = function (stat, buff)
 	-- name = "blessing" 
 
 end
+BuffModificationFunctions[15106 ] = function (stat, buff)
+	-- name = "hero cape cast time" 
 
+end
+BuffModificationFunctions[15780] = function (stat, buff)
+	-- enna's energy
+
+end
+BuffModificationFunctions[20176] = function (stat, buff)
+	-- elementally talanted
+
+end
+BuffModificationFunctions[11467] = function (stat, buff)
+	-- seaknight
+	stat.hasseaknight = true
+end
+
+BuffModificationFunctions[7652] = function (stat, buff)
+
+end
+BuffModificationFunctions[11249] = function (stat, buff)
+
+end
+BuffModificationFunctions[4951] = function (stat, buff)
+
+end
+BuffModificationFunctions[13612] = function (stat, buff)
+	--battle focus rank 3
+
+	-- melee critical damage + 25%
+	stat.melee_critical_bonus = stat.melee_critical_bonus - 25
+end
+BuffModificationFunctions[404] = function (stat, buff)
+	--battle focus rank 1
+
+	-- melee critical damage + 15%
+	stat.melee_critical_bonus = stat.melee_critical_bonus - 15
+end
 return BuffModificationFunctions

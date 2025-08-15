@@ -8,7 +8,7 @@ local ep_addon = {
   name = "Raid Stats",
   author = "Delarme",
   desc = "Shows top raid stats",
-  version = "0.5.3"
+  version = "0.5.3.1"
 }
 local debug = false
 
