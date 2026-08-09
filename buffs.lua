@@ -15,8 +15,8 @@ local function ReduceIntelligence(stat, amount)
 		--magic crit rate 0.11 per 4
 		--ranged crit rate 0.11 per 8
 	stat.ranged_critical_rate = stat.ranged_critical_rate - (0.11 * (amount / 8) )
-	stat.magic_critical_rate = stat.magic_critical_rate - (0.11 * (amount / 4) )
-	stat.magicdpsmod = stat.magicdpsmod - (0.2 * amount)
+	stat.spell_critical_rate = stat.spell_critical_rate - (0.11 * (amount / 4) )
+	stat.spelldpsmod = stat.spelldpsmod - (0.2 * amount)
 end
 
 local function ReduceStrength(stat, amount)

@@ -8,7 +8,7 @@ local ep_addon = {
   name = "Raid Stats",
   author = "Delarme",
   desc = "Shows top raid stats",
-  version = "0.5.3.1"
+  version = "0.5.3.2"
 }
 local debug = false
 
@@ -535,7 +535,7 @@ end
 if api._Addons == nil then
 	api._Addons = {}
 end
-advstatsapi = {}
+local advstatsapi = {}
 advstatsapi.GetData = GetData
 api._Addons.AdvStats = advstatsapi
 
