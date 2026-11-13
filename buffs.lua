@@ -46,9 +46,11 @@ BuffModificationFunctions[11468] = function (stat, buff)
 end
 BuffModificationFunctions[835] = function (stat, buff)
 	stat.hasode = true
+	--api.Log:Info(buff)
 end
 BuffModificationFunctions[13783] = function (stat, buff)
 	stat.hasode = true
+	--api.Log:Info(buff)
 end
 BuffModificationFunctions[15031] = function (stat, buff)
 	stat.rhythmstacks = buff.stack
@@ -254,6 +256,7 @@ end
 BuffModificationFunctions[11467] = function (stat, buff)
 	-- seaknight
 	stat.hasseaknight = true
+	stat.odelevel = stat.odelevel + 1
 end
 
 BuffModificationFunctions[7652] = function (stat, buff)

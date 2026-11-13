@@ -69,6 +69,9 @@ moveWnd:SetHandler("OnDragStart", moveWnd.OnDragStart)
 function moveWnd:OnDragStop()
 	raidStatsWnd:StopMovingOrSizing()
 	api.Cursor:ClearCursor()
+	if (raidStatsWnd.OnMoveDel ~= nil) then
+	  raidStatsWnd.OnMoveDel(raidStatsWnd)
+	end
 end
 moveWnd:SetHandler("OnDragStop", moveWnd.OnDragStop)
 if moveWnd.RegisterForDrag ~= nil then
@@ -87,7 +90,8 @@ local filtersDisplay = {
 	"Healing Power",
 	"Melee Health",
 	"Ranged Health",
-	"Magic Health"
+	"Magic Health",
+	"Ode"
 }
 local typeDisplay = {
 	"Current",
@@ -207,8 +211,15 @@ local function Update()
 		return
 	end
 	--ApplyTextColor(raidStatsWnd.moveWnd.filterButton, FONT_COLOR.WHITE)
-	local selectedindex = raidStatsWnd.moveWnd.filterButton:GetSelectedIndex() + ((raidStatsWnd.moveWnd.typeButton:GetSelectedIndex() - 1 ) * 7)
-	 
+
+	local fbindex = raidStatsWnd.moveWnd.filterButton:GetSelectedIndex()
+	local typeindex = raidStatsWnd.moveWnd.typeButton:GetSelectedIndex()
+	local selectedindex
+	if fbindex ~= 8 then
+	  selectedindex = raidStatsWnd.moveWnd.filterButton:GetSelectedIndex() + ((raidStatsWnd.moveWnd.typeButton:GetSelectedIndex() - 1 ) * 7)
+	else
+	  selectedindex = 15 + typeindex - 1
+	end
 
 	result = raidStatsWnd.fetchData(selectedindex)
 
@@ -235,7 +246,6 @@ local function Update()
 	--reset any unused row
 		i = i + 1
 	end
-
 end
 
 local function SetVisible(visible)
@@ -255,8 +265,6 @@ local function SetVisible(visible)
   else
 	raidStatsWnd:SetExtent(26, 28)
   end
-
-
 
   maximizeButton:Show(not visible)
   maximizeButton.bg:Show(not visible)
@@ -291,12 +299,18 @@ raidStatsWnd.refreshButton:SetHandler("OnClick", function()
 end)
 
 function raidStatsWnd.moveWnd.filterButton:SelectedProc()
-  --api.Log:Info("selected new item")
+  if raidStatsWnd.OnFilterChanged ~= nil then
+	raidStatsWnd.OnFilterChanged(raidStatsWnd.moveWnd.filterButton:GetSelectedIndex())
+  end
+
   Update()
 end
 
 function raidStatsWnd.moveWnd.typeButton:SelectedProc()
-  --api.Log:Info("selected new item")
+  if raidStatsWnd.OnTypeChanged ~= nil then
+	raidStatsWnd.OnTypeChanged(raidStatsWnd.moveWnd.typeButton:GetSelectedIndex())
+  end
+
   Update()
 end
   raidStatsWnd:Show(true)
@@ -308,6 +322,26 @@ function raidStatsWnd:Close()
 		maximizeButton.tooltip:Show(false)
 	end
 	--minimizedWnd:Show(false)
+end
+
+function raidStatsWnd:ApplySettings(settings, uiscale)
+  raidStatsWnd:RemoveAllAnchors()
+  raidStatsWnd:AddAnchor(settings.anchor, "UIParent", settings.posx , settings.posy )
+
+  maximizeButton:RemoveAllAnchors()
+  maximizeButton:AddAnchor("TOPRIGHT", raidStatsWnd, -12 + 250, 5)
+
+  selectedindex = settings.filter
+  typeindex = settings.type
+
+  raidStatsWnd.moveWnd.filterButton:Select(selectedindex)
+  raidStatsWnd.moveWnd.typeButton:Select(typeindex)
+end
+
+function raidStatsWnd:SetOnMoveDelegate(del)
+
+  raidStatsWnd.OnMoveDel = del
+
 end
 
 
