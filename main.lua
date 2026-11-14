@@ -8,7 +8,7 @@ local ep_addon = {
   name = "Raid Stats",
   author = "Delarme",
   desc = "Shows top raid stats",
-  version = "0.6"
+  version = "0.6.1"
 }
 
 local debug = false
@@ -492,6 +492,7 @@ local function TryLoadOrDefaults()
   if data == nil then
 	data = GetDefaults()
   end
+
   return data
 end
 
@@ -519,19 +520,40 @@ local function OnFilterChanged(newFilter)
   SaveData(settings)
 end
 
--- The Load Function is called as soon as the game loads its UI. Use it to initialize anything you need!
-local function Load() 
+local first = false
+
+local function OnUpdate(wnd)
+  if first then
+	return
+  end
+  first = true
+
+  raidStatsWnd:ApplySettings(settings)
+  raidStatsWnd:ReleaseHandler("OnUpdate")
+end
+
+
+local function ProtectedLoad()
   info = ADDON:GetContent(UIC.CHARACTER_INFO)
 
   settings = TryLoadOrDefaults()
-  raidStatsWnd = require("raidstats/stats_raid_view")
+  local suc, wnd = pcall(require, "raidstats/stats_raid_view")
+  if suc then
+	raidStatsWnd = wnd
+  else
+	api.Log:Err(wnd)
+  end
+  --raidStatsWnd = require("raidstats/stats_raid_view")
   raidStatsWnd:SetGetDataDelegate(GetRaidData)
-  raidStatsWnd:ApplySettings(settings, api.Interface:GetUIScale())
+  --raidStatsWnd:ApplySettings(settings)
   raidStatsWnd:SetOnMoveDelegate(SavePosition)
   raidStatsWnd.OnTypeChanged = OnTypeChanged
   raidStatsWnd.OnFilterChanged = OnFilterChanged
+
+  raidStatsWnd:SetHandler("OnUpdate", OnUpdate)
+
   data = GetData("player")
-	
+
   advStatsWndo = api.Interface:CreateWindow("advStatsWndo", "Effective Stats", 300, 200)
   advStatsWndo.child = {}
   advStatsWndo:Show(false)
@@ -553,6 +575,16 @@ local function Load()
 	advStatsWndo.child[k].style:SetColor(0, 0, 0, 1)
 	advStatsWndo.child[k].style:SetAlign(ALIGN.LEFT)
 	advStatsWndo.child[k]:Show(true)
+  end
+
+end
+
+-- The Load Function is called as soon as the game loads its UI. Use it to initialize anything you need!
+local function Load() 
+  local suc, ret = pcall(ProtectedLoad)
+  api.Log:Info(tostring(suc))
+  if ret ~= nil then
+	api.Log:Info(ret)
   end
 end
 

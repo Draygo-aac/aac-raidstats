@@ -150,7 +150,7 @@ api.Interface:ApplyButtonSkin(refreshButton, BUTTON_BASIC.RESET)
 
 local maximizeButton = raidStatsWnd:CreateChildWidget("button", "maximizeButton", 0, true)
 maximizeButton:SetExtent(26, 28)
-maximizeButton:AddAnchor("TOPRIGHT", raidStatsWnd, -12, 5 - 126)
+maximizeButton:AddAnchor("TOPLEFT", raidStatsWnd, -12 + 250, 5)
 local maximizeButtonTexture = maximizeButton:CreateImageDrawable(TEXTURE_PATH.HUD, "background")
 maximizeButtonTexture:SetTexture(TEXTURE_PATH.HUD)
 maximizeButtonTexture:SetCoords(754, 94, 26, 28)
@@ -313,8 +313,8 @@ function raidStatsWnd.moveWnd.typeButton:SelectedProc()
 
   Update()
 end
-  raidStatsWnd:Show(true)
-  SetVisible(false)
+ 
+
 function raidStatsWnd:Close()
 
 	raidStatsWnd:Show(false)
@@ -323,13 +323,26 @@ function raidStatsWnd:Close()
 	end
 	--minimizedWnd:Show(false)
 end
-
-function raidStatsWnd:ApplySettings(settings, uiscale)
+  raidStatsWnd:Show(true)
+  SetVisible(true)
+function raidStatsWnd:ApplySettings(settings)
   raidStatsWnd:RemoveAllAnchors()
-  raidStatsWnd:AddAnchor(settings.anchor, "UIParent", settings.posx , settings.posy )
 
+  raidStatsWnd:AddAnchor(settings.anchor, "UIParent", settings.posx , settings.posy )
+  if raidStatsWnd:CheckOutOfScreen() then
+	raidStatsWnd:RemoveAllAnchors()
+	local x, y = raidStatsWnd:CorrectOffsetByScreen()
+	local uiScale = api.Interface:GetUIScale()
+	raidStatsWnd:AddAnchor("TOPLEFT", "UIParent", x / uiScale, y / uiScale)
+  end
+  if settings.anchor == "RIGHT" then
+	raidStatsWnd:RemoveAllAnchors()
+	local ox,oy = raidStatsWnd:GetOffset()
+	raidStatsWnd:AddAnchor("TOPLEFT", "UIParent", ox , oy)
+  end
+  --raidStatsWnd:AddAnchor("RIGHT", "UIParent", 0, -100)
   maximizeButton:RemoveAllAnchors()
-  maximizeButton:AddAnchor("TOPRIGHT", raidStatsWnd, -12 + 250, 5)
+  maximizeButton:AddAnchor("TOPLEFT", raidStatsWnd, -12 + 250 , 5)
 
   selectedindex = settings.filter
   typeindex = settings.type
